@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  privyId       String   @unique
+  walletAddress String?  @unique
+  email         String?
+  name          String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  groupMemberships GroupMember[]
+  expensesPaid     Expense[]        @relation("PaidByUser")
+  expenseSplits    ExpenseSplit[]
+  settlementsFrom  Settlement[]     @relation("SettlementFrom")
+  settlementsTo    Settlement[]     @relation("SettlementTo")
+  requestsFrom     PaymentRequest[] @relation("RequestFrom")
+  requestsTo       PaymentRequest[] @relation("RequestTo")
+  createdGroups    Group[]          @relation("GroupCreator")
+  ownedContacts    Contact[]        @relation("OwnedContacts")
+  contactOf        Contact[]        @relation("ContactUser")
+
+  @@map("users")
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  inviteCode  String   @unique @default(cuid())
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy       User             @relation("GroupCreator", fields: [createdById], references: [id])
+  members         GroupMember[]
+  expenses        Expense[]
+  settlements     Settlement[]
+  paymentRequests PaymentRequest[]
+
+  @@map("groups")
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  userId   String
+  groupId  String
+  role     GroupRole  @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+enum SplitType {
+  EQUAL
+  EXACT
+  PERCENTAGE
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  groupId     String
+  paidById    String
+  amount      Decimal   @db.Decimal(18, 2)
+  description String
+  splitType   SplitType @default(EQUAL)
+  date        DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  group  Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy User           @relation("PaidByUser", fields: [paidById], references: [id])
+  splits ExpenseSplit[]
+
+  @@index([groupId])
+  @@map("expenses")
+}
+
+model ExpenseSplit {
+  id        String  @id @default(cuid())
+  expenseId String
+  userId    String
+  amount    Decimal @db.Decimal(18, 2)
+  isPaid    Boolean @default(false)
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+  @@index([userId])
+  @@map("expense_splits")
+}
+
+enum SettlementStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+model Settlement {
+  id         String           @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  amount     Decimal          @db.Decimal(18, 2)
+  txHash     String?          @unique
+  groupId    String
+  status     SettlementStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  fromUser User  @relation("SettlementFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("SettlementTo", fields: [toUserId], references: [id])
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("settlements")
+}
+
+model Contact {
+  id            String   @id @default(cuid())
+  ownerId       String
+  name          String?
+  email         String?
+  walletAddress String?
+  userId        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner User  @relation("OwnedContacts", fields: [ownerId], references: [id])
+  user  User? @relation("ContactUser", fields: [userId], references: [id])
+
+  @@unique([ownerId, email])
+  @@unique([ownerId, walletAddress])
+  @@index([ownerId])
+  @@map("contacts")
+}
+
+enum PaymentRequestStatus {
+  PENDING
+  PAID
+  DECLINED
+  CANCELLED
+}
+
+model PaymentRequest {
+  id         String               @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  amount     Decimal              @db.Decimal(18, 2)
+  groupId    String
+  status     PaymentRequestStatus @default(PENDING)
+  message    String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  fromUser User  @relation("RequestFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("RequestTo", fields: [toUserId], references: [id])
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([toUserId])
+  @@map("payment_requests")
+}

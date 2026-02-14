@@ -1,26 +1,525 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─── Light: iOS SystemGray palette ─── */
+:root {
+  --radius: 0.75rem;
+  --background: #f2f2f7;
+  --foreground: #1c1c1e;
+  --card: rgba(255, 255, 255, 0.72);
+  --card-foreground: #1c1c1e;
+  --popover: rgba(255, 255, 255, 0.88);
+  --popover-foreground: #1c1c1e;
+  --primary: #1c1c1e;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(120, 120, 128, 0.12);
+  --secondary-foreground: #1c1c1e;
+  --muted: rgba(120, 120, 128, 0.08);
+  --muted-foreground: #8e8e93;
+  --accent: rgba(120, 120, 128, 0.16);
+  --accent-foreground: #1c1c1e;
+  --destructive: #ff3b30;
+  --border: rgba(60, 60, 67, 0.1);
+  --input: rgba(120, 120, 128, 0.12);
+  --ring: #8e8e93;
+  --chart-1: #1c1c1e;
+  --chart-2: #636366;
+  --chart-3: #8e8e93;
+  --chart-4: #aeaeb2;
+  --chart-5: #c7c7cc;
+  --sidebar: rgba(255, 255, 255, 0.72);
+  --sidebar-foreground: #1c1c1e;
+  --sidebar-primary: #1c1c1e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(120, 120, 128, 0.12);
+  --sidebar-accent-foreground: #1c1c1e;
+  --sidebar-border: rgba(60, 60, 67, 0.1);
+  --sidebar-ring: #8e8e93;
+}
+
+/* ─── Dark: iOS true black palette ─── */
+.dark {
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --card: rgba(28, 28, 30, 0.72);
+  --card-foreground: #f5f5f7;
+  --popover: rgba(44, 44, 46, 0.88);
+  --popover-foreground: #f5f5f7;
+  --primary: #f5f5f7;
+  --primary-foreground: #000000;
+  --secondary: rgba(118, 118, 128, 0.24);
+  --secondary-foreground: #f5f5f7;
+  --muted: rgba(118, 118, 128, 0.18);
+  --muted-foreground: #98989d;
+  --accent: rgba(118, 118, 128, 0.28);
+  --accent-foreground: #f5f5f7;
+  --destructive: #ff453a;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(118, 118, 128, 0.24);
+  --ring: #636366;
+  --chart-1: #f5f5f7;
+  --chart-2: #d1d1d6;
+  --chart-3: #aeaeb2;
+  --chart-4: #8e8e93;
+  --chart-5: #636366;
+  --sidebar: rgba(28, 28, 30, 0.72);
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-primary: #f5f5f7;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(118, 118, 128, 0.24);
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #636366;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ═══════════════════════════════════════════════════
+   iOS Glassmorphism
+   Modeled after Apple's UIVisualEffectView materials
+   ═══════════════════════════════════════════════════ */
+
+/* Regular material — cards, panels */
+.glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.04);
 }
+
+.dark .glass {
+  background: rgba(30, 30, 32, 0.55);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Thick material — navbars, prominent panels */
+.glass-strong {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(60px) saturate(200%);
+  -webkit-backdrop-filter: blur(60px) saturate(200%);
+  border: 0.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.7),
+    0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-strong {
+  background: rgba(36, 36, 38, 0.65);
+  backdrop-filter: blur(60px) saturate(180%);
+  -webkit-backdrop-filter: blur(60px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Ultra-thin material — badges, subtle overlays */
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 0.5px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-subtle {
+  background: rgba(40, 40, 42, 0.4);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 0.5px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════
+   Mesh gradient — iOS ambient blurs
+   ═══════════════════════════════════════════════════ */
+
+.mesh-gradient {
+  background:
+    radial-gradient(ellipse at 25% 0%, rgba(199, 199, 204, 0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 100%, rgba(174, 174, 178, 0.2) 0%, transparent 50%),
+    #f2f2f7;
+}
+
+.dark .mesh-gradient {
+  background:
+    radial-gradient(ellipse at 25% 0%, rgba(72, 72, 74, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 100%, rgba(58, 58, 60, 0.1) 0%, transparent 50%),
+    #000000;
+}
+
+/* ═══════════════════════════════════════════════════
+   Gradient text — Chrome finish
+   ═══════════════════════════════════════════════════ */
+
+.gradient-text {
+  background: linear-gradient(135deg, #1c1c1e 0%, #636366 50%, #1c1c1e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(135deg, #d1d1d6 0%, #ffffff 45%, #aeaeb2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════
+   iOS floating shadows — layered depth
+   ═══════════════════════════════════════════════════ */
+
+.float-shadow {
+  box-shadow:
+    0 0.5px 0 0 rgba(255, 255, 255, 0.1) inset,
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 6px 24px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dark .float-shadow {
+  box-shadow:
+    0 0.5px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 6px 24px -4px rgba(0, 0, 0, 0.45);
+}
+
+.float-shadow-lg {
+  box-shadow:
+    0 0.5px 0 0 rgba(255, 255, 255, 0.12) inset,
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 12px 40px -8px rgba(0, 0, 0, 0.12);
+}
+
+.dark .float-shadow-lg {
+  box-shadow:
+    0 0.5px 0 0 rgba(255, 255, 255, 0.08) inset,
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 12px 40px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* ═══════════════════════════════════════════════════
+   Gradient border — iOS top-edge highlight
+   ═══════════════════════════════════════════════════ */
+
+.gradient-border {
+  position: relative;
+  border: none !important;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 0.5px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+.dark .gradient-border::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   Glow effects
+   ═══════════════════════════════════════════════════ */
+
+.glow-primary {
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.15);
+}
+
+.dark .glow-primary {
+  box-shadow: 0 4px 20px -4px rgba(255, 255, 255, 0.1);
+}
+
+.glow-success {
+  box-shadow: 0 0 20px -4px rgba(52, 199, 89, 0.25);
+}
+
+.glow-danger {
+  box-shadow: 0 0 20px -4px rgba(255, 59, 48, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════
+   Spinner
+   ═══════════════════════════════════════════════════ */
+
+.spinner-gradient {
+  border: 3px solid rgba(120, 120, 128, 0.12);
+  border-top-color: #1c1c1e;
+}
+
+.dark .spinner-gradient {
+  border: 3px solid rgba(118, 118, 128, 0.18);
+  border-top-color: #d1d1d6;
+}
+
+/* ═══════════════════════════════════════════════════
+   Metallic sheen — hover highlight sweep
+   ═══════════════════════════════════════════════════ */
+
+.metallic-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.metallic-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 60%
+  );
+  pointer-events: none;
+  transition: transform 0.6s ease;
+  transform: translateX(-100%);
+}
+
+.metallic-sheen:hover::after {
+  transform: translateX(100%);
+}
+
+/* ═══════════════════════════════════════════════════
+   Animations
+   ═══════════════════════════════════════════════════ */
+
+@keyframes navbar-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nav-pill {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-navbar-slide-down {
+  animation: navbar-slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-nav-pill {
+  animation: nav-pill 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ═══════════════════════════════════════════════════
+   Login page — staggered entrance + card animations
+   ═══════════════════════════════════════════════════ */
+
+@keyframes login-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-stagger-1 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; }
+.login-stagger-2 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; }
+.login-stagger-3 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; }
+.login-stagger-4 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards; }
+.login-stagger-5 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards; }
+.login-stagger-6 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; }
+.login-stagger-7 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
+
+/* Stacked card deck — cards appear one by one and settle into a stack */
+@keyframes deck-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* After entering, the card settles back to make room for the next */
+@keyframes deck-settle-1 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-12px) scale(0.94); }
+}
+@keyframes deck-settle-2 {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-6px) scale(0.97); }
+}
+
+/* Subtle float for the top card */
+@keyframes deck-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1); }
+}
+
+/* Card 1: enters first, then settles back twice as other cards stack on top */
+.deck-card-1 {
+  opacity: 0;
+  z-index: 1;
+  animation:
+    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards,
+    deck-settle-1 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards;
+}
+
+/* Card 2: enters second, then settles back once */
+.deck-card-2 {
+  opacity: 0;
+  z-index: 2;
+  animation:
+    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards,
+    deck-settle-2 0.5s cubic-bezier(0.16, 1, 0.3, 1) 2.2s forwards;
+}
+
+/* Card 3: enters last, stays on top with breathing */
+.deck-card-3 {
+  opacity: 0;
+  z-index: 3;
+  animation:
+    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 2.2s forwards,
+    deck-breathe 4s ease-in-out 3s infinite;
+}
+
+/* Checkmark pop */
+@keyframes check-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.login-check-pop {
+  animation: check-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 2.6s both;
+}
+
+/* Background grid */
+.login-grid {
+  background-image:
+    linear-gradient(var(--foreground) 1px, transparent 1px),
+    linear-gradient(90deg, var(--foreground) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ═══════════════════════════════════════════════════
+   Live feed tags — continuous loop
+   Total cycle: 18s, each tag visible for ~3s
+   6 tags staggered 3s apart fills the full cycle
+   ═══════════════════════════════════════════════════ */
+
+@keyframes feed-pulse {
+  0%       { opacity: 0; transform: translateY(6px) scale(0.95); }
+  6%       { opacity: 1; transform: translateY(0) scale(1); }
+  17%      { opacity: 1; transform: translateY(0) scale(1); }
+  22%      { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  100%     { opacity: 0; transform: translateY(6px) scale(0.95); }
+}
+
+.feed-tag-1 { opacity: 0; animation: feed-pulse 18s ease-in-out 2s infinite; }
+.feed-tag-2 { opacity: 0; animation: feed-pulse 18s ease-in-out 5s infinite; }
+.feed-tag-3 { opacity: 0; animation: feed-pulse 18s ease-in-out 8s infinite; }
+.feed-tag-4 { opacity: 0; animation: feed-pulse 18s ease-in-out 11s infinite; }
+.feed-tag-5 { opacity: 0; animation: feed-pulse 18s ease-in-out 14s infinite; }
+.feed-tag-6 { opacity: 0; animation: feed-pulse 18s ease-in-out 17s infinite; }
