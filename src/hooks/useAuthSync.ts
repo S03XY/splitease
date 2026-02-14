@@ -2,12 +2,28 @@
 
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useEffect, useRef } from 'react'
+import { tempoTestnet } from '@/lib/tempo'
+
+const TEMPO_CAIP2 = `eip155:${tempoTestnet.id}`
 
 export function useAuthSync() {
   const { user, ready, authenticated } = usePrivy()
   const { wallets } = useWallets()
   const hasSynced = useRef(false)
   const syncedWithWallet = useRef(false)
+
+  // Switch any wallet not on Tempo testnet
+  useEffect(() => {
+    if (!ready || !authenticated || wallets.length === 0) return
+
+    wallets.forEach((wallet) => {
+      if (wallet.chainId !== TEMPO_CAIP2) {
+        wallet.switchChain(tempoTestnet.id).catch(() => {
+          // User may reject — transaction hooks will retry before sending
+        })
+      }
+    })
+  }, [ready, authenticated, wallets])
 
   useEffect(() => {
     if (!ready || !authenticated || !user) return

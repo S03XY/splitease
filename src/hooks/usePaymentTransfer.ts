@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useWallets, useSendTransaction } from '@privy-io/react-auth'
+import { useWallets } from '@privy-io/react-auth'
 import {
   createPublicClient,
   http,
@@ -10,6 +10,13 @@ import {
 } from 'viem'
 import { tempoTestnet, DEFAULT_STABLECOIN, ERC20_ABI } from '@/lib/tempo'
 
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'string') return err
+  if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message)
+  return 'Transfer failed'
+}
+
 interface TransferParams {
   toAddress: string
   amount: number
@@ -17,7 +24,6 @@ interface TransferParams {
 
 export function usePaymentTransfer() {
   const { wallets } = useWallets()
-  const { sendTransaction } = useSendTransaction()
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,12 +33,22 @@ export function usePaymentTransfer() {
       setError(null)
 
       try {
+        // Prefer external wallet (MetaMask etc), fall back to embedded
         const wallet =
-          wallets.find((w) => w.walletClientType === 'privy') || wallets[0]
+          wallets.find((w) => w.walletClientType !== 'privy') ||
+          wallets.find((w) => w.walletClientType === 'privy')
 
         if (!wallet) throw new Error('No wallet found. Please reconnect.')
 
-        await wallet.switchChain(tempoTestnet.id)
+        // Switch chain
+        try {
+          await wallet.switchChain(tempoTestnet.id)
+        } catch (switchErr) {
+          console.error('[PaymentTransfer] switchChain failed:', switchErr)
+          throw new Error('Please switch your wallet to Tempo Testnet and try again.')
+        }
+
+        const provider = await wallet.getEthereumProvider()
 
         const publicClient = createPublicClient({
           chain: tempoTestnet,
@@ -51,37 +67,27 @@ export function usePaymentTransfer() {
           args: [toAddress as `0x${string}`, parseUnits(amount.toString(), decimals)],
         })
 
-        const { hash } = await sendTransaction(
-          {
+        // Send via EIP-1193 provider directly (works for both external & embedded wallets)
+        const txHash = await provider.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: wallet.address as `0x${string}`,
             to: DEFAULT_STABLECOIN,
             data,
-            chainId: tempoTestnet.id,
-          },
-          {
-            uiOptions: {
-              description: `Transfer ${amount} AlphaUSD`,
-              buttonText: 'Confirm & Send',
-              transactionInfo: {
-                title: 'Payment Details',
-                action: `Send ${amount} AlphaUSD`,
-                contractInfo: {
-                  name: 'AlphaUSD Token',
-                },
-              },
-            },
-          }
-        )
+          }],
+        })
 
-        return hash
+        return txHash as `0x${string}`
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Transfer failed'
+        console.error('[PaymentTransfer] error:', err)
+        const message = extractErrorMessage(err)
         setError(message)
-        throw err
+        throw new Error(message)
       } finally {
         setIsPending(false)
       }
     },
-    [wallets, sendTransaction]
+    [wallets]
   )
 
   return { transfer, isPending, error }

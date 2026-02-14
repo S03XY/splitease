@@ -147,8 +147,9 @@ export default function RequestsPage() {
       })
       toast.success('Payment sent!')
       fetchRequests()
-    } catch {
-      toast.error('Payment failed. Please try again.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Payment failed'
+      toast.error(msg)
     }
   }
 

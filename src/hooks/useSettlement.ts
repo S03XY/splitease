@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useWallets, useSendTransaction } from '@privy-io/react-auth'
+import { useWallets } from '@privy-io/react-auth'
 import {
   createPublicClient,
   http,
@@ -10,6 +10,13 @@ import {
 } from 'viem'
 import { tempoTestnet, DEFAULT_STABLECOIN, ERC20_ABI } from '@/lib/tempo'
 import { useAuthFetch } from '@/hooks/useCurrentUser'
+
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'string') return err
+  if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message)
+  return 'Settlement failed'
+}
 
 interface SettleParams {
   toAddress: string
@@ -20,7 +27,6 @@ interface SettleParams {
 
 export function useSettlement() {
   const { wallets } = useWallets()
-  const { sendTransaction } = useSendTransaction()
   const { authFetch } = useAuthFetch()
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,12 +37,22 @@ export function useSettlement() {
       setError(null)
 
       try {
+        // Prefer external wallet (MetaMask etc), fall back to embedded
         const wallet =
-          wallets.find((w) => w.walletClientType === 'privy') || wallets[0]
+          wallets.find((w) => w.walletClientType !== 'privy') ||
+          wallets.find((w) => w.walletClientType === 'privy')
 
         if (!wallet) throw new Error('No wallet found. Please reconnect.')
 
-        await wallet.switchChain(tempoTestnet.id)
+        // Switch chain
+        try {
+          await wallet.switchChain(tempoTestnet.id)
+        } catch (switchErr) {
+          console.error('[Settlement] switchChain failed:', switchErr)
+          throw new Error('Please switch your wallet to Tempo Testnet and try again.')
+        }
+
+        const provider = await wallet.getEthereumProvider()
 
         const publicClient = createPublicClient({
           chain: tempoTestnet,
@@ -55,26 +71,15 @@ export function useSettlement() {
           args: [toAddress as `0x${string}`, parseUnits(amount.toString(), decimals)],
         })
 
-        const { hash: txHash } = await sendTransaction(
-          {
+        // Send via EIP-1193 provider directly (works for both external & embedded wallets)
+        const txHash = await provider.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: wallet.address as `0x${string}`,
             to: DEFAULT_STABLECOIN,
             data,
-            chainId: tempoTestnet.id,
-          },
-          {
-            uiOptions: {
-              description: `Transfer ${amount} AlphaUSD`,
-              buttonText: 'Confirm & Send',
-              transactionInfo: {
-                title: 'Settlement Details',
-                action: `Send ${amount} AlphaUSD`,
-                contractInfo: {
-                  name: 'AlphaUSD Token',
-                },
-              },
-            },
-          }
-        )
+          }],
+        }) as `0x${string}`
 
         // Record in DB
         await authFetch('/api/settlements', {
@@ -92,14 +97,15 @@ export function useSettlement() {
 
         return { txHash, receipt }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Settlement failed'
+        console.error('[Settlement] error:', err)
+        const message = extractErrorMessage(err)
         setError(message)
-        throw err
+        throw new Error(message)
       } finally {
         setIsPending(false)
       }
     },
-    [wallets, sendTransaction, authFetch]
+    [wallets, authFetch]
   )
 
   return { settle, isPending, error }
