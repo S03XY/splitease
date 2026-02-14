@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuthFetch } from '@/hooks/useCurrentUser'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatAmountWithCommas, sanitizeAmountInput } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface Member {
@@ -160,18 +160,20 @@ export function ExpenseForm({ groupId, members, currentUserId, expense }: Expens
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount ($)</Label>
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-          className="rounded-xl"
-        />
+        <Label htmlFor="amount">Amount</Label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">$</span>
+          <Input
+            id="amount"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={formatAmountWithCommas(amount)}
+            onChange={(e) => setAmount(sanitizeAmountInput(e.target.value))}
+            required
+            className="rounded-xl pl-7"
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -221,17 +223,20 @@ export function ExpenseForm({ groupId, members, currentUserId, expense }: Expens
             )}
 
             {splitType === 'EXACT' && selectedMembers.has(m.user.id) && (
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                value={exactAmounts[m.user.id] || ''}
-                onChange={(e) =>
-                  setExactAmounts({ ...exactAmounts, [m.user.id]: e.target.value })
-                }
-                className="w-28 rounded-xl"
-              />
+              <div className="relative w-28">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs pointer-events-none">$</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={exactAmounts[m.user.id] || ''}
+                  onChange={(e) =>
+                    setExactAmounts({ ...exactAmounts, [m.user.id]: e.target.value })
+                  }
+                  className="rounded-xl pl-5"
+                />
+              </div>
             )}
 
             {splitType === 'PERCENTAGE' && selectedMembers.has(m.user.id) && (

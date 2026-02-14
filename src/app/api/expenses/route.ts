@@ -6,10 +6,15 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentUser(req)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  try {
   const { groupId, amount, description, splitType, splits, paidById, date } = await req.json()
 
   if (!groupId || !amount || !description || !splitType) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (typeof amount !== 'number' || amount <= 0) {
+    return NextResponse.json({ error: 'Amount must be a positive number' }, { status: 400 })
   }
 
   const payerId = paidById || user.id
@@ -19,6 +24,10 @@ export async function POST(req: NextRequest) {
     select: { userId: true },
   })
   const memberIds = new Set(members.map((m) => m.userId))
+
+  if (!memberIds.has(user.id)) {
+    return NextResponse.json({ error: 'You are not in this group' }, { status: 403 })
+  }
 
   if (!memberIds.has(payerId)) {
     return NextResponse.json({ error: 'Payer is not in the group' }, { status: 400 })
@@ -76,6 +85,7 @@ export async function POST(req: NextRequest) {
     data: {
       groupId,
       paidById: payerId,
+      createdById: user.id,
       amount,
       description,
       splitType,
@@ -95,4 +105,8 @@ export async function POST(req: NextRequest) {
   })
 
   return NextResponse.json({ expense }, { status: 201 })
+  } catch (error) {
+    console.error('Failed to create expense:', error)
+    return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 })
+  }
 }

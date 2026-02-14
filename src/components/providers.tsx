@@ -13,7 +13,7 @@ function PrivyWithTheme({ children }: { children: React.ReactNode }) {
       config={{
         appearance: {
           theme: resolvedTheme === 'dark' ? 'dark' : 'light',
-          accentColor: '#a1a1aa',
+          accentColor: resolvedTheme === 'dark' ? '#f5f5f7' : '#1c1c1e',
           logo: '/logo.png',
         },
         loginMethods: ['email', 'google', 'wallet'],

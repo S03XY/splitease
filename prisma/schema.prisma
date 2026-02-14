@@ -19,6 +19,7 @@ model User {
 
   groupMemberships GroupMember[]
   expensesPaid     Expense[]        @relation("PaidByUser")
+  expensesCreated  Expense[]        @relation("CreatedByUser")
   expenseSplits    ExpenseSplit[]
   settlementsFrom  Settlement[]     @relation("SettlementFrom")
   settlementsTo    Settlement[]     @relation("SettlementTo")
@@ -40,11 +41,10 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy       User             @relation("GroupCreator", fields: [createdById], references: [id])
-  members         GroupMember[]
-  expenses        Expense[]
-  settlements     Settlement[]
-  paymentRequests PaymentRequest[]
+  createdBy   User           @relation("GroupCreator", fields: [createdById], references: [id])
+  members     GroupMember[]
+  expenses    Expense[]
+  settlements Settlement[]
 
   @@map("groups")
 }
@@ -78,6 +78,7 @@ model Expense {
   id          String    @id @default(cuid())
   groupId     String
   paidById    String
+  createdById String?
   amount      Decimal   @db.Decimal(18, 2)
   description String
   splitType   SplitType @default(EQUAL)
@@ -85,9 +86,10 @@ model Expense {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  group  Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  paidBy User           @relation("PaidByUser", fields: [paidById], references: [id])
-  splits ExpenseSplit[]
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy    User           @relation("PaidByUser", fields: [paidById], references: [id])
+  createdBy User?          @relation("CreatedByUser", fields: [createdById], references: [id])
+  splits    ExpenseSplit[]
 
   @@index([groupId])
   @@map("expenses")
@@ -162,21 +164,20 @@ enum PaymentRequestStatus {
 }
 
 model PaymentRequest {
-  id         String               @id @default(cuid())
-  fromUserId String
-  toUserId   String
-  amount     Decimal              @db.Decimal(18, 2)
-  groupId    String
-  status     PaymentRequestStatus @default(PENDING)
-  message    String?
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  id              String               @id @default(cuid())
+  fromUserId      String
+  toUserId        String
+  amount          Decimal              @db.Decimal(18, 2)
+  status          PaymentRequestStatus @default(PENDING)
+  message         String?
+  rejectionReason String?
+  txHash          String?              @unique
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
-  fromUser User  @relation("RequestFrom", fields: [fromUserId], references: [id])
-  toUser   User  @relation("RequestTo", fields: [toUserId], references: [id])
-  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  fromUser User @relation("RequestFrom", fields: [fromUserId], references: [id])
+  toUser   User @relation("RequestTo", fields: [toUserId], references: [id])
 
-  @@index([groupId])
   @@index([toUserId])
   @@map("payment_requests")
 }

@@ -26,10 +26,15 @@ interface Contact {
   createdAt: string
 }
 
+const ITEMS_PER_PAGE = 9
+
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [hasContacts, setHasContacts] = useState(false)
+  const [page, setPage] = useState(1)
   const { authFetch } = useAuthFetch()
 
   // Add contact dialog
@@ -49,28 +54,33 @@ export default function ContactsPage() {
   const [groupsLoading, setGroupsLoading] = useState(false)
   const [invitingToGroup, setInvitingToGroup] = useState<string | null>(null)
 
-  const fetchContacts = useCallback(async (q?: string) => {
+  const fetchContacts = useCallback(async (q?: string, isInitial?: boolean) => {
     try {
       const url = q ? `/api/contacts?q=${encodeURIComponent(q)}` : '/api/contacts'
       const res = await authFetch(url)
       if (res.ok) {
         const data = await res.json()
         setContacts(data.contacts)
+        if (isInitial && data.contacts.length > 0) setHasContacts(true)
       }
     } catch {
       console.error('Failed to fetch contacts')
     } finally {
       setLoading(false)
+      setSearching(false)
     }
   }, [authFetch])
 
   useEffect(() => {
-    fetchContacts()
+    fetchContacts(undefined, true)
   }, [fetchContacts])
 
   useEffect(() => {
+    setPage(1)
+    if (!search) return
+    setSearching(true)
     const timeout = setTimeout(() => {
-      fetchContacts(search || undefined)
+      fetchContacts(search)
     }, 300)
     return () => clearTimeout(timeout)
   }, [search, fetchContacts])
@@ -95,6 +105,7 @@ export default function ContactsPage() {
         throw new Error(data.error)
       }
       toast.success('Contact added')
+      setHasContacts(true)
       setShowAdd(false)
       setAddName('')
       setAddEmail('')
@@ -186,67 +197,118 @@ export default function ContactsPage() {
         </Button>
       </div>
 
-      <Input
-        placeholder="Search contacts by name, email, or wallet..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="rounded-xl"
-        autoComplete="off"
-      />
-
-      {contacts.length === 0 ? (
-        <div className="glass rounded-2xl float-shadow p-12 text-center">
-          <p className="text-muted-foreground">
-            {search ? 'No contacts found.' : 'No contacts yet. Add one to get started.'}
-          </p>
+      {hasContacts && (
+        <div className="relative">
+          <Input
+            placeholder="Search contacts by name, email, or wallet..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="rounded-xl pr-9"
+            autoComplete="off"
+          />
+          {searching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 spinner-gradient" />
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {contacts.map((contact) => (
-            <div key={contact.id} className="glass rounded-2xl float-shadow hover:float-shadow-lg transition-all duration-300 p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center text-sm font-bold shrink-0">
-                    {(contact.name || contact.email || contact.walletAddress || '?')[0].toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold truncate">
-                      {contact.name || contact.email || contact.walletAddress}
-                    </p>
-                    {contact.name && contact.email && (
-                      <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
-                    )}
-                    {contact.walletAddress && (
-                      <p className="text-xs text-muted-foreground/60 truncate font-mono">
-                        {contact.walletAddress.slice(0, 6)}...{contact.walletAddress.slice(-4)}
-                      </p>
-                    )}
+      )}
+
+      {(() => {
+        const totalPages = Math.ceil(contacts.length / ITEMS_PER_PAGE)
+        const paginated = contacts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+
+        if (contacts.length === 0) {
+          return (
+            <div className="glass rounded-2xl float-shadow p-12 text-center">
+              <p className="text-muted-foreground">
+                {search ? 'No contacts found.' : 'No contacts yet. Add one to get started.'}
+              </p>
+            </div>
+          )
+        }
+
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginated.map((contact) => (
+                <div key={contact.id} className="glass rounded-2xl float-shadow hover:float-shadow-lg transition-all duration-300 p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center text-sm font-bold shrink-0">
+                        {(contact.name || contact.email || contact.walletAddress || '?')[0].toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate">
+                          {contact.name || contact.email || contact.walletAddress}
+                        </p>
+                        {contact.name && contact.email && (
+                          <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+                        )}
+                        {contact.walletAddress && (
+                          <p className="text-xs text-muted-foreground/60 truncate font-mono">
+                            {contact.walletAddress.slice(0, 6)}...{contact.walletAddress.slice(-4)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => openGroupPicker(contact)}
+                      >
+                        Add to Group
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground hover:text-rose-500 h-7"
+                        onClick={() => handleDelete(contact.id)}
+                        disabled={deletingId === contact.id}
+                      >
+                        {deletingId === contact.id ? '...' : 'Remove'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 shrink-0">
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2">
+                <p className="text-sm text-muted-foreground">
+                  {contacts.length} contact{contacts.length !== 1 ? 's' : ''}
+                </p>
+                <div className="flex items-center gap-2">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="text-xs h-7"
-                    onClick={() => openGroupPicker(contact)}
+                    className="rounded-xl"
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => p - 1)}
                   >
-                    Add to Group
+                    Previous
                   </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Page {page} of {totalPages}
+                  </span>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="text-xs text-muted-foreground hover:text-rose-500 h-7"
-                    onClick={() => handleDelete(contact.id)}
-                    disabled={deletingId === contact.id}
+                    className="rounded-xl"
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => p + 1)}
                   >
-                    {deletingId === contact.id ? '...' : 'Remove'}
+                    Next
                   </Button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </>
+        )
+      })()}
 
       {/* Add to Group Dialog */}
       <Dialog open={showGroupPicker} onOpenChange={(open) => { if (!open) { setShowGroupPicker(false); setSelectedContact(null) } }}>

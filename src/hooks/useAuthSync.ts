@@ -7,13 +7,18 @@ export function useAuthSync() {
   const { user, ready, authenticated } = usePrivy()
   const { wallets } = useWallets()
   const hasSynced = useRef(false)
+  const syncedWithWallet = useRef(false)
 
   useEffect(() => {
-    if (!ready || !authenticated || !user || hasSynced.current) return
+    if (!ready || !authenticated || !user) return
 
     const embeddedWallet = wallets.find((w) => w.walletClientType === 'privy')
     const externalWallet = wallets.find((w) => w.walletClientType !== 'privy')
     const walletAddress = embeddedWallet?.address || externalWallet?.address
+
+    // Skip if already synced with a wallet, or already synced and still no wallet
+    if (syncedWithWallet.current) return
+    if (hasSynced.current && !walletAddress) return
 
     const syncUser = async () => {
       try {
@@ -28,6 +33,7 @@ export function useAuthSync() {
           }),
         })
         hasSynced.current = true
+        if (walletAddress) syncedWithWallet.current = true
       } catch (error) {
         console.error('Failed to sync user:', error)
       }

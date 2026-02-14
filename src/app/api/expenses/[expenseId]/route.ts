@@ -11,26 +11,64 @@ export async function GET(
 
   const { expenseId } = await params
 
+  try {
+    const expense = await prisma.expense.findUnique({
+      where: { id: expenseId },
+      include: {
+        paidBy: true,
+        splits: { include: { user: true } },
+        group: { include: { members: { include: { user: true } } } },
+      },
+    })
+
+    if (!expense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+    }
+
+    const isMember = expense.group.members.some((m) => m.userId === user.id)
+    if (!isMember) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    return NextResponse.json({ expense })
+  } catch (error) {
+    console.error('Failed to fetch expense:', error)
+    return NextResponse.json({ error: 'Failed to fetch expense' }, { status: 500 })
+  }
+}
+
+async function checkCreatorAndSettlement(user: { id: string }, expenseId: string) {
   const expense = await prisma.expense.findUnique({
     where: { id: expenseId },
     include: {
-      paidBy: true,
-      splits: { include: { user: true } },
-      group: { include: { members: { include: { user: true } } } },
+      splits: { select: { userId: true, isPaid: true } },
+      group: { include: { members: true } },
     },
   })
 
   if (!expense) {
-    return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+    return { error: 'Expense not found', status: 404 }
   }
 
-  // Verify user is a member of the group
   const isMember = expense.group.members.some((m) => m.userId === user.id)
   if (!isMember) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return { error: 'Forbidden', status: 403 }
   }
 
-  return NextResponse.json({ expense })
+  // Only the creator (or payer for legacy expenses) can edit/delete
+  const creatorId = expense.createdById || expense.paidById
+  if (creatorId !== user.id) {
+    return { error: 'Only the expense creator can modify this expense', status: 403 }
+  }
+
+  // Block if fully settled (all non-payer splits are isPaid)
+  const nonPayerSplits = expense.splits.filter((s) => s.userId !== expense.paidById)
+  const allSettled = nonPayerSplits.length > 0 && nonPayerSplits.every((s) => s.isPaid)
+  if (allSettled) {
+    return { error: 'Cannot modify a fully settled expense', status: 400 }
+  }
+
+  return { expense, members: expense.group.members }
 }
 
 export async function PUT(
@@ -43,23 +81,14 @@ export async function PUT(
   const { expenseId } = await params
   const { amount, description, splitType, splits, paidById, date } = await req.json()
 
-  // Fetch existing expense and verify ownership
-  const existing = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    include: { group: { include: { members: true } } },
-  })
-
-  if (!existing) {
-    return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+  try {
+  const check = await checkCreatorAndSettlement(user, expenseId)
+  if ('error' in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status })
   }
 
-  const memberIds = new Set(existing.group.members.map((m) => m.userId))
-  if (!memberIds.has(user.id)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  // Check no confirmed settlement exists for this group that depends on this expense
-  // (We allow editing as long as the user hasn't settled yet — simplified check)
+  const existing = check.expense
+  const memberIds = new Set(check.members.map((m) => m.userId))
 
   const payerId = paidById || existing.paidById
 
@@ -147,6 +176,10 @@ export async function PUT(
   })
 
   return NextResponse.json({ expense })
+  } catch (error) {
+    console.error('Failed to update expense:', error)
+    return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 })
+  }
 }
 
 export async function DELETE(
@@ -158,21 +191,17 @@ export async function DELETE(
 
   const { expenseId } = await params
 
-  const expense = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    include: { group: { include: { members: true } } },
-  })
+  try {
+    const check = await checkCreatorAndSettlement(user, expenseId)
+    if ('error' in check) {
+      return NextResponse.json({ error: check.error }, { status: check.status })
+    }
 
-  if (!expense) {
-    return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+    await prisma.expense.delete({ where: { id: expenseId } })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to delete expense:', error)
+    return NextResponse.json({ error: 'Failed to delete expense' }, { status: 500 })
   }
-
-  const isMember = expense.group.members.some((m) => m.userId === user.id)
-  if (!isMember) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
-  await prisma.expense.delete({ where: { id: expenseId } })
-
-  return NextResponse.json({ success: true })
 }

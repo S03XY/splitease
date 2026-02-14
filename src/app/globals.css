@@ -125,6 +125,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Hide number input spinners */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -430,60 +439,6 @@
 .login-stagger-6 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; }
 .login-stagger-7 { opacity: 0; animation: login-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
 
-/* Stacked card deck — cards appear one by one and settle into a stack */
-@keyframes deck-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* After entering, the card settles back to make room for the next */
-@keyframes deck-settle-1 {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-12px) scale(0.94); }
-}
-@keyframes deck-settle-2 {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-6px) scale(0.97); }
-}
-
-/* Subtle float for the top card */
-@keyframes deck-breathe {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-4px) scale(1); }
-}
-
-/* Card 1: enters first, then settles back twice as other cards stack on top */
-.deck-card-1 {
-  opacity: 0;
-  z-index: 1;
-  animation:
-    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards,
-    deck-settle-1 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards;
-}
-
-/* Card 2: enters second, then settles back once */
-.deck-card-2 {
-  opacity: 0;
-  z-index: 2;
-  animation:
-    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.4s forwards,
-    deck-settle-2 0.5s cubic-bezier(0.16, 1, 0.3, 1) 2.2s forwards;
-}
-
-/* Card 3: enters last, stays on top with breathing */
-.deck-card-3 {
-  opacity: 0;
-  z-index: 3;
-  animation:
-    deck-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) 2.2s forwards,
-    deck-breathe 4s ease-in-out 3s infinite;
-}
 
 /* Checkmark pop */
 @keyframes check-pop {
@@ -492,23 +447,10 @@
   100% { transform: scale(1); opacity: 1; }
 }
 .login-check-pop {
-  animation: check-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 2.6s both;
+  animation: check-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.8s both;
 }
 
-/* Background grid */
-.login-grid {
-  background-image:
-    linear-gradient(var(--foreground) 1px, transparent 1px),
-    linear-gradient(90deg, var(--foreground) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
-
-/* ═══════════════════════════════════════════════════
-   Live feed tags — continuous loop
-   Total cycle: 18s, each tag visible for ~3s
-   6 tags staggered 3s apart fills the full cycle
-   ═══════════════════════════════════════════════════ */
-
+/* Live feed tags — continuous loop */
 @keyframes feed-pulse {
   0%       { opacity: 0; transform: translateY(6px) scale(0.95); }
   6%       { opacity: 1; transform: translateY(0) scale(1); }
@@ -521,5 +463,12 @@
 .feed-tag-2 { opacity: 0; animation: feed-pulse 18s ease-in-out 5s infinite; }
 .feed-tag-3 { opacity: 0; animation: feed-pulse 18s ease-in-out 8s infinite; }
 .feed-tag-4 { opacity: 0; animation: feed-pulse 18s ease-in-out 11s infinite; }
-.feed-tag-5 { opacity: 0; animation: feed-pulse 18s ease-in-out 14s infinite; }
-.feed-tag-6 { opacity: 0; animation: feed-pulse 18s ease-in-out 17s infinite; }
+
+/* Background grid */
+.login-grid {
+  background-image:
+    linear-gradient(var(--foreground) 1px, transparent 1px),
+    linear-gradient(90deg, var(--foreground) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+

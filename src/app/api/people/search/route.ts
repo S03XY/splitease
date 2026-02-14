@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth'
 
 export interface PersonResult {
   id: string
+  userId: string | null
   name: string | null
   email: string | null
   walletAddress: string | null
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
         if (c.userId) contactUserIds.add(c.userId)
         results.push({
           id: c.id,
+          userId: c.userId,
           name: c.user?.name || c.name,
           email: c.user?.email || c.email,
           walletAddress: c.user?.walletAddress || c.walletAddress,
@@ -89,6 +91,7 @@ export async function GET(req: NextRequest) {
 
       results.push({
         id: `gm-${gm.userId}`,
+        userId: gm.userId,
         name: gm.user.name,
         email: gm.user.email,
         walletAddress: gm.user.walletAddress,

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { GroupCard } from '@/components/groups/group-card'
 import { JoinGroupForm } from '@/components/groups/join-group-form'
 import { useAuthFetch } from '@/hooks/useCurrentUser'
@@ -20,11 +21,17 @@ interface GroupData {
   description: string | null
   members: { user: { name: string | null; email: string | null } }[]
   _count: { expenses: number }
+  balance: number
+  totalExpenses: number
 }
+
+const ITEMS_PER_PAGE = 9
 
 export default function GroupsPage() {
   const [groups, setGroups] = useState<GroupData[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [page, setPage] = useState(1)
   const { authFetch } = useAuthFetch()
 
   useEffect(() => {
@@ -44,6 +51,10 @@ export default function GroupsPage() {
     fetchGroups()
   }, [authFetch])
 
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -51,6 +62,12 @@ export default function GroupsPage() {
       </div>
     )
   }
+
+  const filtered = groups.filter((g) =>
+    g.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -74,18 +91,65 @@ export default function GroupsPage() {
         </div>
       </div>
 
+      {groups.length > 0 && (
+        <Input
+          placeholder="Search groups by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="rounded-xl"
+          autoComplete="off"
+        />
+      )}
+
       {groups.length === 0 ? (
         <div className="glass rounded-2xl float-shadow p-12 text-center">
           <p className="text-muted-foreground">
             No groups yet. Create one or join with an invite code.
           </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {groups.map((group) => (
-            <GroupCard key={group.id} group={group} />
-          ))}
+      ) : filtered.length === 0 ? (
+        <div className="glass rounded-2xl float-shadow p-12 text-center">
+          <p className="text-muted-foreground">No groups match your search.</p>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginated.map((group) => (
+              <GroupCard key={group.id} group={group} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-muted-foreground">
+                {filtered.length} group{filtered.length !== 1 ? 's' : ''}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  disabled={page === totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

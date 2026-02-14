@@ -9,24 +9,20 @@ import {
   parseUnits,
 } from 'viem'
 import { tempoTestnet, DEFAULT_STABLECOIN, ERC20_ABI } from '@/lib/tempo'
-import { useAuthFetch } from '@/hooks/useCurrentUser'
 
-interface SettleParams {
+interface TransferParams {
   toAddress: string
   amount: number
-  groupId: string
-  toUserId: string
 }
 
-export function useSettlement() {
+export function usePaymentTransfer() {
   const { wallets } = useWallets()
   const { sendTransaction } = useSendTransaction()
-  const { authFetch } = useAuthFetch()
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const settle = useCallback(
-    async ({ toAddress, amount, groupId, toUserId }: SettleParams) => {
+  const transfer = useCallback(
+    async ({ toAddress, amount }: TransferParams) => {
       setIsPending(true)
       setError(null)
 
@@ -55,7 +51,7 @@ export function useSettlement() {
           args: [toAddress as `0x${string}`, parseUnits(amount.toString(), decimals)],
         })
 
-        const { hash: txHash } = await sendTransaction(
+        const { hash } = await sendTransaction(
           {
             to: DEFAULT_STABLECOIN,
             data,
@@ -66,7 +62,7 @@ export function useSettlement() {
               description: `Transfer ${amount} AlphaUSD`,
               buttonText: 'Confirm & Send',
               transactionInfo: {
-                title: 'Settlement Details',
+                title: 'Payment Details',
                 action: `Send ${amount} AlphaUSD`,
                 contractInfo: {
                   name: 'AlphaUSD Token',
@@ -76,31 +72,17 @@ export function useSettlement() {
           }
         )
 
-        // Record in DB
-        await authFetch('/api/settlements', {
-          method: 'POST',
-          body: JSON.stringify({ groupId, toUserId, amount, txHash }),
-        })
-
-        // Wait for confirmation
-        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-
-        // Mark confirmed
-        await authFetch(`/api/settlements/${txHash}/confirm`, {
-          method: 'PATCH',
-        })
-
-        return { txHash, receipt }
+        return hash
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Settlement failed'
+        const message = err instanceof Error ? err.message : 'Transfer failed'
         setError(message)
         throw err
       } finally {
         setIsPending(false)
       }
     },
-    [wallets, sendTransaction, authFetch]
+    [wallets, sendTransaction]
   )
 
-  return { settle, isPending, error }
+  return { transfer, isPending, error }
 }

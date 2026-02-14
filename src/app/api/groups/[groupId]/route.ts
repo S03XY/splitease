@@ -32,5 +32,11 @@ export async function GET(
     return NextResponse.json({ error: 'Group not found' }, { status: 404 })
   }
 
-  return NextResponse.json({ group })
+  const currentMember = group.members.find((m) => m.userId === user.id)
+
+  return NextResponse.json({
+    group,
+    currentUserId: user.id,
+    currentUserRole: currentMember?.role || 'MEMBER',
+  })
 }

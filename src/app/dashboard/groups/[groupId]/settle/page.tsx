@@ -76,81 +76,78 @@ export default function SettlePage({
     <div className="space-y-6 max-w-2xl animate-fade-in-up">
       <h1 className="text-3xl font-bold gradient-text inline-block">Settle Up</h1>
 
-      {myDebts.length > 0 ? (
-        <Card className="glass rounded-2xl border-0 float-shadow">
-          <CardHeader>
-            <CardTitle>You Owe</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {myDebts.map((debt, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{debt.toUserName || 'Unknown'}</p>
-                  <p className="text-sm text-rose-500">{formatCurrency(debt.amount)}</p>
-                </div>
-                {debt.toWalletAddress ? (
-                  <SettleButton
-                    toAddress={debt.toWalletAddress}
-                    toName={debt.toUserName}
-                    amount={debt.amount}
-                    groupId={groupId}
-                    toUserId={debt.toUserId}
-                    onSettled={refetch}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">No wallet address</p>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="glass rounded-2xl border-0 float-shadow">
-          <CardContent className="py-8 text-center text-muted-foreground">
-            You don&apos;t owe anyone in this group.
-          </CardContent>
-        </Card>
-      )}
-
-      {owedToMe.length > 0 && (
-        <Card className="glass rounded-2xl border-0 float-shadow">
-          <CardHeader>
-            <CardTitle>Owed to You</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {owedToMe.map((debt, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{debt.fromUserName || 'Unknown'}</p>
-                  <p className="text-sm text-emerald-500 font-medium">
-                    {formatCurrency(debt.amount)}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl"
-                  onClick={() =>
-                    setRequestTarget({
-                      userId: debt.fromUserId,
-                      name: debt.fromUserName || 'Unknown',
-                      amount: debt.amount,
-                    })
-                  }
-                >
-                  Request
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {myDebts.length === 0 && owedToMe.length === 0 && (
+      {myDebts.length === 0 && owedToMe.length === 0 ? (
         <Card className="glass rounded-2xl border-0 float-shadow">
           <CardContent className="py-8 text-center text-muted-foreground">
             All settled up in this group!
           </CardContent>
+        </Card>
+      ) : (
+        <Card className="glass rounded-2xl border-0 float-shadow">
+          {myDebts.length > 0 && (
+            <>
+              <CardHeader>
+                <CardTitle>You Owe</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {myDebts.map((debt, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{debt.toUserName || 'Unknown'}</p>
+                      <p className="text-sm text-rose-500">{formatCurrency(debt.amount)}</p>
+                    </div>
+                    {debt.toWalletAddress ? (
+                      <SettleButton
+                        toAddress={debt.toWalletAddress}
+                        toName={debt.toUserName}
+                        amount={debt.amount}
+                        groupId={groupId}
+                        toUserId={debt.toUserId}
+                        onSettled={refetch}
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No wallet address</p>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </>
+          )}
+
+          {owedToMe.length > 0 && (
+            <>
+              {myDebts.length > 0 && <hr className="border-foreground/5 mx-6" />}
+              <CardHeader>
+                <CardTitle>Owed to You</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {owedToMe.map((debt, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{debt.fromUserName || 'Unknown'}</p>
+                      <p className="text-sm text-emerald-500 font-medium">
+                        {formatCurrency(debt.amount)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() =>
+                        setRequestTarget({
+                          userId: debt.fromUserId,
+                          name: debt.fromUserName || 'Unknown',
+                          amount: debt.amount,
+                        })
+                      }
+                    >
+                      Request
+                    </Button>
+                  </div>
+                ))}
+              </CardContent>
+            </>
+          )}
         </Card>
       )}
 

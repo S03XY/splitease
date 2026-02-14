@@ -43,17 +43,25 @@ export async function GET(req: NextRequest) {
     if (rounded > 0) totalOwed += rounded
     else totalOwing += Math.abs(rounded)
 
+    const totalExpenses = expenseData.reduce((sum, e) => sum + e.amount, 0)
+
     return {
       groupId: m.group.id,
       groupName: m.group.name,
       memberCount: m.group.members.length,
       balance: rounded,
+      totalExpenses: Math.round(totalExpenses * 100) / 100,
     }
   })
 
-  const [pendingRequests, recentSettlements] = await Promise.all([
-    prisma.paymentRequest.count({
+  const [incomingRequests, outgoingRequests, recentSettlements] = await Promise.all([
+    prisma.paymentRequest.findMany({
       where: { toUserId: user.id, status: 'PENDING' },
+      select: { amount: true },
+    }),
+    prisma.paymentRequest.findMany({
+      where: { fromUserId: user.id, status: 'PENDING' },
+      select: { amount: true },
     }),
     prisma.settlement.findMany({
       where: { OR: [{ fromUserId: user.id }, { toUserId: user.id }] },
@@ -63,10 +71,19 @@ export async function GET(req: NextRequest) {
     }),
   ])
 
+  const incomingRequestTotal = incomingRequests.reduce((sum, r) => sum + Number(r.amount), 0)
+  const outgoingRequestTotal = outgoingRequests.reduce((sum, r) => sum + Number(r.amount), 0)
+
   return NextResponse.json({
     totalOwed: Math.round(totalOwed * 100) / 100,
     totalOwing: Math.round(totalOwing * 100) / 100,
-    pendingRequests,
+    pendingRequests: incomingRequests.length,
+    requestSummary: {
+      incomingCount: incomingRequests.length,
+      incomingTotal: Math.round(incomingRequestTotal * 100) / 100,
+      outgoingCount: outgoingRequests.length,
+      outgoingTotal: Math.round(outgoingRequestTotal * 100) / 100,
+    },
     groupSummaries,
     recentSettlements,
   })
