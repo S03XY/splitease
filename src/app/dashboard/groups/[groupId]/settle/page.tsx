@@ -94,7 +94,7 @@ export default function SettlePage({
                   <div key={i} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{debt.toUserName || 'Unknown'}</p>
-                      <p className="text-sm text-rose-500">{formatCurrency(debt.amount)}</p>
+                      <p className="text-sm text-destructive">{formatCurrency(debt.amount)}</p>
                     </div>
                     {debt.toWalletAddress ? (
                       <SettleButton
@@ -125,7 +125,7 @@ export default function SettlePage({
                   <div key={i} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{debt.fromUserName || 'Unknown'}</p>
-                      <p className="text-sm text-emerald-500 font-medium">
+                      <p className="text-sm text-primary font-medium">
                         {formatCurrency(debt.amount)}
                       </p>
                     </div>
@@ -162,7 +162,7 @@ export default function SettlePage({
               <div className="glass-subtle rounded-xl p-4 text-center">
                 <p className="text-sm text-muted-foreground">Requesting from</p>
                 <p className="font-semibold text-lg mt-1">{requestTarget.name}</p>
-                <p className="text-2xl font-bold text-emerald-500 mt-2">
+                <p className="text-2xl font-bold text-primary mt-2">
                   {formatCurrency(requestTarget.amount)}
                 </p>
               </div>

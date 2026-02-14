@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <AuthGuard>
       <div className="min-h-screen mesh-gradient">
         <Navbar />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-8">
           {children}
         </main>
       </div>

@@ -190,9 +190,9 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-3xl font-bold gradient-text inline-block">Contacts</h1>
-        <Button onClick={() => setShowAdd(true)} className="rounded-xl">
+        <Button onClick={() => setShowAdd(true)} className="rounded-xl text-sm">
           Add Contact
         </Button>
       </div>
@@ -264,7 +264,7 @@ export default function ContactsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-xs text-muted-foreground hover:text-rose-500 h-7"
+                        className="text-xs text-muted-foreground hover:text-destructive h-7"
                         onClick={() => handleDelete(contact.id)}
                         disabled={deletingId === contact.id}
                       >

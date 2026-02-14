@@ -98,7 +98,7 @@ export default function ProfilePage() {
       <h1 className="text-3xl font-bold gradient-text inline-block">Profile</h1>
 
       {/* User Info Card */}
-      <div className="glass rounded-2xl float-shadow p-8">
+      <div className="glass rounded-2xl float-shadow p-5 sm:p-8">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-full bg-foreground text-background flex items-center justify-center text-2xl font-bold shrink-0">
             {initial}
@@ -133,7 +133,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Account Details */}
-      <div className="glass rounded-2xl float-shadow p-8 space-y-4">
+      <div className="glass rounded-2xl float-shadow p-5 sm:p-8 space-y-4">
         <h3 className="font-semibold">Account Details</h3>
 
         {user.walletAddress && (

@@ -309,19 +309,19 @@ export default function GroupDetailPage({
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           All Groups
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold gradient-text inline-block">{group.name}</h1>
             {group.description && (
               <p className="text-muted-foreground mt-1">{group.description}</p>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <Link href={`/dashboard/groups/${groupId}/settle`}>
-              <Button variant="outline" className="rounded-xl">Settle Up</Button>
+              <Button variant="outline" className="rounded-xl text-sm">Settle Up</Button>
             </Link>
             <Link href={`/dashboard/groups/${groupId}/expenses/new`}>
-              <Button className="rounded-xl">Add Expense</Button>
+              <Button className="rounded-xl text-sm">Add Expense</Button>
             </Link>
           </div>
         </div>
@@ -379,11 +379,7 @@ export default function GroupDetailPage({
                                   <p className="text-xs text-muted-foreground truncate">{person.email}</p>
                                 )}
                               </div>
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                                person.source === 'contact'
-                                  ? 'bg-emerald-500/10 text-emerald-500'
-                                  : 'bg-blue-500/10 text-blue-500'
-                              }`}>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 bg-secondary text-secondary-foreground">
                                 {person.source === 'contact' ? 'Contact' : 'Group member'}
                               </span>
                             </button>
@@ -463,7 +459,7 @@ export default function GroupDetailPage({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-[11px] h-7 px-2.5 rounded-lg text-rose-500 border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-600"
+                            className="text-[11px] h-7 px-2.5 rounded-lg text-destructive border-destructive/20 hover:bg-destructive/10"
                             disabled={removingMemberId === member.id}
                             onClick={() => handleRemoveMember(member)}
                           >
@@ -530,13 +526,13 @@ export default function GroupDetailPage({
                           <div className="flex-1 h-1.5 bg-foreground/5 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                isFullySettled ? 'bg-emerald-500' : progress > 0 ? 'bg-amber-500' : 'bg-foreground/10'
+                                isFullySettled ? 'bg-primary' : progress > 0 ? 'bg-primary/60' : 'bg-foreground/10'
                               }`}
                               style={{ width: `${progress}%` }}
                             />
                           </div>
                           <span className={`text-xs font-medium shrink-0 ${
-                            isFullySettled ? 'text-emerald-500' : progress > 0 ? 'text-amber-500' : 'text-muted-foreground'
+                            isFullySettled ? 'text-primary' : progress > 0 ? 'text-primary/60' : 'text-muted-foreground'
                           }`}>
                             {progress}%
                           </span>
@@ -592,7 +588,7 @@ export default function GroupDetailPage({
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">Settlement Progress</p>
                       <span className={`text-sm font-semibold ${
-                        isFullySettled ? 'text-emerald-500' : progress > 0 ? 'text-amber-500' : 'text-muted-foreground'
+                        isFullySettled ? 'text-primary' : progress > 0 ? 'text-primary/60' : 'text-muted-foreground'
                       }`}>
                         {paidCount}/{nonPayerSplits.length} settled ({progress}%)
                       </span>
@@ -600,7 +596,7 @@ export default function GroupDetailPage({
                     <div className="h-2 bg-foreground/5 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          isFullySettled ? 'bg-emerald-500' : progress > 0 ? 'bg-amber-500' : 'bg-foreground/10'
+                          isFullySettled ? 'bg-primary' : progress > 0 ? 'bg-primary/60' : 'bg-foreground/10'
                         }`}
                         style={{ width: `${progress}%` }}
                       />
@@ -619,13 +615,13 @@ export default function GroupDetailPage({
                         <div
                           key={split.id}
                           className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${
-                            split.isPaid || isPayer ? 'bg-emerald-500/5' : 'bg-foreground/3'
+                            split.isPaid || isPayer ? 'bg-primary/5' : 'bg-foreground/3'
                           }`}
                         >
                           {/* Status icon */}
                           <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs ${
                             split.isPaid || isPayer
-                              ? 'bg-emerald-500/20 text-emerald-500'
+                              ? 'bg-primary/20 text-primary'
                               : 'bg-foreground/10 text-muted-foreground'
                           }`}>
                             {split.isPaid || isPayer ? '\u2713' : '\u2022'}
@@ -642,7 +638,7 @@ export default function GroupDetailPage({
                           </div>
                           {/* Amount */}
                           <p className={`text-sm font-semibold shrink-0 ${
-                            split.isPaid || isPayer ? 'text-emerald-500' : ''
+                            split.isPaid || isPayer ? 'text-primary' : ''
                           }`}>
                             {formatCurrency(parseFloat(split.amount))}
                           </p>
@@ -667,7 +663,7 @@ export default function GroupDetailPage({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-xl text-xs text-rose-500 border-rose-500/20 hover:bg-rose-500/10"
+                        className="rounded-xl text-xs text-destructive border-destructive/20 hover:bg-destructive/10"
                         onClick={() => {
                           setDeleteExpenseId(selectedExpense.id)
                           setSelectedExpense(null)

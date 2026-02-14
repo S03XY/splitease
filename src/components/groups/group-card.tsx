@@ -32,7 +32,7 @@ export function GroupCard({ group }: GroupCardProps) {
             </div>
             <div className="text-right">
               <p className="text-[11px] text-muted-foreground">Your Balance</p>
-              <p className={`text-sm font-semibold mt-0.5 ${group.balance > 0 ? 'text-emerald-500' : group.balance < 0 ? 'text-rose-500' : 'text-muted-foreground'}`}>
+              <p className={`text-sm font-semibold mt-0.5 ${group.balance > 0 ? 'text-primary' : group.balance < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {group.balance > 0 ? '+' : ''}{formatCurrency(group.balance)}
               </p>
             </div>

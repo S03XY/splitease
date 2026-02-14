@@ -51,9 +51,10 @@ export function JoinGroupForm() {
           value={inviteCode}
           onChange={(e) => setInviteCode(e.target.value)}
           required
+          className="rounded-xl"
         />
       </div>
-      <Button type="submit" disabled={loading || !inviteCode.trim()}>
+      <Button type="submit" disabled={loading || !inviteCode.trim()} className="rounded-xl">
         {loading ? 'Joining...' : 'Join Group'}
       </Button>
     </form>

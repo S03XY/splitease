@@ -43,7 +43,7 @@ export function CreateGroupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-5 max-w-md glass rounded-2xl p-5 sm:p-8 float-shadow">
       <div className="space-y-2">
         <Label htmlFor="name">Group Name</Label>
         <Input
@@ -52,6 +52,7 @@ export function CreateGroupForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          className="rounded-xl"
         />
       </div>
       <div className="space-y-2">
@@ -61,9 +62,10 @@ export function CreateGroupForm() {
           placeholder="What's this group for?"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="rounded-xl"
         />
       </div>
-      <Button type="submit" disabled={loading || !name.trim()}>
+      <Button type="submit" disabled={loading || !name.trim()} className="rounded-xl">
         {loading ? 'Creating...' : 'Create Group'}
       </Button>
     </form>

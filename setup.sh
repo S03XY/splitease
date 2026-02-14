@@ -1,48 +1,46 @@
 #!/usr/bin/env bash
 set -e
 
-echo "==> SplitEase Setup"
+echo "=== SplitEase — Supabase Database Setup ==="
 echo ""
 
-# 1. Check prerequisites
-for cmd in docker node npm; do
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "ERROR: $cmd is not installed. Please install it first."
-    exit 1
-  fi
-done
-
-# 2. Create .env if missing
+# 1. Check .env exists
 if [ ! -f .env ]; then
-  echo "==> Creating .env from .env.example"
-  cp .env.example .env
-  echo "    Edit .env to set your NEXT_PUBLIC_PRIVY_APP_ID"
+  echo "ERROR: .env file not found. Create it with DATABASE_URL and DIRECT_URL first."
+  exit 1
 fi
 
-# 3. Start PostgreSQL container
-echo "==> Starting PostgreSQL container..."
-docker compose up -d db
-echo "    Waiting for Postgres to be ready..."
-until docker compose exec db pg_isready -U postgres &>/dev/null; do
-  sleep 1
-done
-echo "    Postgres is ready."
+# 2. Load .env variables into shell
+export $(grep -v '^#' .env | xargs)
 
-# 4. Install Node dependencies
-echo "==> Installing dependencies..."
+# 3. Check for placeholder password
+if grep -q '\[YOUR-PASSWORD\]' .env; then
+  echo "ERROR: Replace [YOUR-PASSWORD] in .env with your actual Supabase password."
+  exit 1
+fi
+
+# 3. Install dependencies
+echo "[1/4] Installing dependencies..."
 npm install
 
-# 5. Generate Prisma client & run migrations
-echo "==> Generating Prisma client..."
+# 4. Push schema to Supabase (use DIRECT_URL to bypass PgBouncer)
+echo ""
+echo "[2/4] Pushing schema to Supabase..."
+DATABASE_URL="$DIRECT_URL" npx prisma db push
+
+# 5. Generate Prisma client
+echo ""
+echo "[3/4] Generating Prisma client..."
 npx prisma generate
 
-echo "==> Running database migrations..."
-npx prisma migrate dev --name init
+# 6. Verify connection
+echo ""
+echo "[4/4] Verifying connection..."
+DATABASE_URL="$DIRECT_URL" npx prisma db execute --stdin <<< "SELECT 1;"
 
 echo ""
-echo "==> Setup complete!"
+echo "=== Setup complete! ==="
 echo ""
 echo "Next steps:"
-echo "  1. Set your Privy App ID in .env (NEXT_PUBLIC_PRIVY_APP_ID)"
-echo "  2. Run: npm run dev"
-echo "  3. Open: http://localhost:3000"
+echo "  1. Run: npm run dev"
+echo "  2. Open: http://localhost:3000"

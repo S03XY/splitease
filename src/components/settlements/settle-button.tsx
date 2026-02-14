@@ -59,7 +59,7 @@ export function SettleButton({
 
           {txHash ? (
             <div className="space-y-4">
-              <p className="text-emerald-600 font-medium">Payment confirmed!</p>
+              <p className="text-primary font-medium">Payment confirmed!</p>
               <div className="bg-secondary rounded-xl p-4 space-y-2 text-sm">
                 <p>
                   <span className="text-muted-foreground">Amount:</span>{' '}

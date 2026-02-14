@@ -71,12 +71,12 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-3xl font-bold gradient-text inline-block">Groups</h1>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="rounded-xl">Join Group</Button>
+              <Button variant="outline" className="rounded-xl text-sm">Join Group</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -86,7 +86,7 @@ export default function GroupsPage() {
             </DialogContent>
           </Dialog>
           <Link href="/dashboard/groups/new">
-            <Button className="rounded-xl">Create Group</Button>
+            <Button className="rounded-xl text-sm">Create Group</Button>
           </Link>
         </div>
       </div>

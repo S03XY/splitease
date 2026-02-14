@@ -83,7 +83,7 @@ export function GroupBalances({ groupId }: GroupBalancesProps) {
           <CardTitle className="text-lg">Your Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={`text-2xl font-bold ${myAmount >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+          <p className={`text-2xl font-bold ${myAmount >= 0 ? 'text-primary' : 'text-destructive'}`}>
             {myAmount >= 0
               ? `You are owed ${formatCurrency(myAmount)}`
               : `You owe ${formatCurrency(Math.abs(myAmount))}`}
@@ -101,7 +101,7 @@ export function GroupBalances({ groupId }: GroupBalancesProps) {
               <div key={i} className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{debt.toUserName || 'Unknown'}</p>
-                  <p className="text-sm text-rose-500">{formatCurrency(debt.amount)}</p>
+                  <p className="text-sm text-destructive">{formatCurrency(debt.amount)}</p>
                 </div>
                 <Link href={`/dashboard/groups/${groupId}/settle`}>
                   <Button size="sm" className="rounded-xl">Settle</Button>
@@ -122,7 +122,7 @@ export function GroupBalances({ groupId }: GroupBalancesProps) {
               <div key={i} className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{debt.fromUserName || 'Unknown'}</p>
-                  <p className="text-sm text-emerald-500 font-medium">
+                  <p className="text-sm text-primary font-medium">
                     {formatCurrency(debt.amount)}
                   </p>
                 </div>
@@ -161,7 +161,7 @@ export function GroupBalances({ groupId }: GroupBalancesProps) {
               <div className="glass-subtle rounded-xl p-4 text-center">
                 <p className="text-sm text-muted-foreground">Requesting from</p>
                 <p className="font-semibold text-lg mt-1">{requestTarget.name}</p>
-                <p className="text-2xl font-bold text-emerald-500 mt-2">
+                <p className="text-2xl font-bold text-primary mt-2">
                   {formatCurrency(requestTarget.amount)}
                 </p>
               </div>

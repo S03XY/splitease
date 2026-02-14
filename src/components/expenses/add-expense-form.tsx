@@ -191,7 +191,7 @@ export function AddExpenseForm({ groupId, members, currentUserId }: AddExpenseFo
             </span>
 
             {splitType === 'EQUAL' && selectedMembers.has(m.user.id) && (
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {formatCurrency(perPerson)}
               </span>
             )}
@@ -227,19 +227,19 @@ export function AddExpenseForm({ groupId, members, currentUserId }: AddExpenseFo
                   }
                   className="w-20"
                 />
-                <span className="text-sm text-gray-500">%</span>
+                <span className="text-sm text-muted-foreground">%</span>
               </div>
             )}
           </div>
         ))}
 
         {splitType === 'EXACT' && (
-          <p className={`text-sm ${Math.abs(exactTotal - totalAmount) > 0.01 ? 'text-red-500' : 'text-green-600'}`}>
+          <p className={`text-sm ${Math.abs(exactTotal - totalAmount) > 0.01 ? 'text-destructive' : 'text-primary'}`}>
             Total: {formatCurrency(exactTotal)} / {formatCurrency(totalAmount)}
           </p>
         )}
         {splitType === 'PERCENTAGE' && (
-          <p className={`text-sm ${Math.abs(pctTotal - 100) > 0.01 ? 'text-red-500' : 'text-green-600'}`}>
+          <p className={`text-sm ${Math.abs(pctTotal - 100) > 0.01 ? 'text-destructive' : 'text-primary'}`}>
             Total: {pctTotal.toFixed(1)}% / 100%
           </p>
         )}

@@ -162,51 +162,52 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
-        <div
-          className={`sm:hidden overflow-hidden transition-all duration-300 ease-out ${
-            mobileOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="mx-3 mb-3 mt-1 p-3 space-y-1 rounded-xl bg-background dark:bg-[#1c1c1e] border border-border">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`block px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200 ${
-                  isActive(link.href)
-                    ? 'bg-background text-foreground font-medium float-shadow'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-
-            <div className="pt-2 border-t border-border/50">
-              <Link
-                href="/dashboard/profile"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200"
-              >
-                <div className="w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-[10px] font-bold">
-                  {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
-                </div>
-                <span className="truncate">
-                  {user?.email?.address || truncateAddress(user?.wallet?.address || '')}
-                </span>
-              </Link>
-              <button
-                onClick={() => { logout(); setMobileOpen(false) }}
-                className="w-full mt-1 px-3.5 py-2.5 rounded-xl text-sm text-left text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
       </nav>
+
+      {/* Mobile menu — outside nav to avoid border-radius clipping */}
+      <div
+        className={`sm:hidden transition-all duration-300 ease-out mt-2 ${
+          mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+        }`}
+      >
+        <div className="max-w-5xl mx-auto glass rounded-2xl float-shadow p-2 space-y-0.5" style={{ backgroundColor: 'var(--background)' }}>
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className={`block px-4 py-3 rounded-xl text-sm transition-all duration-200 ${
+                isActive(link.href)
+                  ? 'bg-primary/10 text-foreground font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="mx-2 border-t border-border/50" />
+
+          <Link
+            href="/dashboard/profile"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200"
+          >
+            <div className="w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-[10px] font-bold">
+              {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
+            </div>
+            <span className="truncate">
+              {user?.email?.address || truncateAddress(user?.wallet?.address || '')}
+            </span>
+          </Link>
+          <button
+            onClick={() => { logout(); setMobileOpen(false) }}
+            className="w-full px-4 py-3 rounded-xl text-sm text-left text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-all duration-200"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

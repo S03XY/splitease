@@ -75,7 +75,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-3xl font-bold gradient-text inline-block">Dashboard</h1>
         <div className="flex gap-2">
           <Link href="/dashboard/requests">
@@ -95,19 +95,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="glass rounded-2xl float-shadow p-6">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Net Balance</p>
-            <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            <p className={`text-3xl font-bold mt-2 ${netBalance >= 0 ? 'text-primary' : 'text-destructive'}`}>
               {netBalance >= 0 ? '+' : ''}{formatCurrency(netBalance)}
             </p>
           </div>
           <div className="glass rounded-2xl float-shadow p-6">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Owed to You</p>
-            <p className="text-3xl font-bold mt-2 text-emerald-500">
+            <p className="text-3xl font-bold mt-2 text-primary">
               {formatCurrency(data?.totalOwed || 0)}
             </p>
           </div>
           <div className="glass rounded-2xl float-shadow p-6">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">You Owe</p>
-            <p className="text-3xl font-bold mt-2 text-rose-500">
+            <p className="text-3xl font-bold mt-2 text-destructive">
               {formatCurrency(data?.totalOwing || 0)}
             </p>
           </div>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-[11px] text-muted-foreground">Your Balance</p>
-                          <p className={`text-sm font-semibold mt-0.5 ${g.balance > 0 ? 'text-emerald-500' : g.balance < 0 ? 'text-rose-500' : 'text-muted-foreground'}`}>
+                          <p className={`text-sm font-semibold mt-0.5 ${g.balance > 0 ? 'text-primary' : g.balance < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
                             {g.balance > 0 ? '+' : ''}{formatCurrency(g.balance)}
                           </p>
                         </div>
@@ -195,12 +195,12 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Incoming Requests</p>
                 {(rs?.incomingCount || 0) > 0 && (
-                  <span className="text-xs bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                     {rs?.incomingCount} pending
                   </span>
                 )}
               </div>
-              <p className="text-3xl font-bold mt-2 text-amber-500">
+              <p className="text-3xl font-bold mt-2 text-foreground">
                 {formatCurrency(rs?.incomingTotal || 0)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Amount others are requesting from you</p>
@@ -211,12 +211,12 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Outgoing Requests</p>
                 {(rs?.outgoingCount || 0) > 0 && (
-                  <span className="text-xs bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                     {rs?.outgoingCount} pending
                   </span>
                 )}
               </div>
-              <p className="text-3xl font-bold mt-2 text-blue-500">
+              <p className="text-3xl font-bold mt-2 text-foreground">
                 {formatCurrency(rs?.outgoingTotal || 0)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">Amount you are requesting from others</p>

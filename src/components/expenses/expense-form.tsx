@@ -146,7 +146,7 @@ export function ExpenseForm({ groupId, members, currentUserId, expense }: Expens
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg glass rounded-2xl p-8 float-shadow">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg glass rounded-2xl p-5 sm:p-8 float-shadow">
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Input
@@ -260,12 +260,12 @@ export function ExpenseForm({ groupId, members, currentUserId, expense }: Expens
         ))}
 
         {splitType === 'EXACT' && (
-          <p className={`text-sm ${Math.abs(exactTotal - totalAmount) > 0.01 ? 'text-rose-500' : 'text-emerald-600'}`}>
+          <p className={`text-sm ${Math.abs(exactTotal - totalAmount) > 0.01 ? 'text-destructive' : 'text-primary'}`}>
             Total: {formatCurrency(exactTotal)} / {formatCurrency(totalAmount)}
           </p>
         )}
         {splitType === 'PERCENTAGE' && (
-          <p className={`text-sm ${Math.abs(pctTotal - 100) > 0.01 ? 'text-rose-500' : 'text-emerald-600'}`}>
+          <p className={`text-sm ${Math.abs(pctTotal - 100) > 0.01 ? 'text-destructive' : 'text-primary'}`}>
             Total: {pctTotal.toFixed(1)}% / 100%
           </p>
         )}
