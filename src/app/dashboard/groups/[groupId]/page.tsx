@@ -73,9 +73,7 @@ export default function GroupDetailPage({
     source: 'contact' | 'group_member'
   }>>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [searchedOnce, setSearchedOnce] = useState(false)
   const [searching, setSearching] = useState(false)
-  const [savingContact, setSavingContact] = useState(false)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -106,7 +104,6 @@ export default function GroupDetailPage({
         const data = await res.json()
         setSuggestions(data.results)
         setShowSuggestions(true)
-        setSearchedOnce(true)
       }
     } catch {
       // silent
@@ -121,7 +118,6 @@ export default function GroupDetailPage({
     if (value.length < 2) {
       setSuggestions([])
       setShowSuggestions(false)
-      setSearchedOnce(false)
       setSearching(false)
       return
     }
@@ -162,7 +158,6 @@ export default function GroupDetailPage({
       toast.success('Member invited!')
       setInviteEmail('')
       setShowSuggestions(false)
-      setSearchedOnce(false)
       // Refresh group data
       const refreshRes = await authFetch(`/api/groups/${groupId}`)
       if (refreshRes.ok) {
@@ -174,29 +169,6 @@ export default function GroupDetailPage({
       toast.error(message)
     } finally {
       setInviting(false)
-    }
-  }
-
-  const addToContactsInline = async () => {
-    if (!inviteEmail.trim()) return
-    setSavingContact(true)
-    const isAddress = inviteEmail.startsWith('0x')
-    try {
-      await authFetch('/api/contacts', {
-        method: 'POST',
-        body: JSON.stringify(
-          isAddress
-            ? { walletAddress: inviteEmail }
-            : { email: inviteEmail }
-        ),
-      })
-      toast.success('Saved to contacts')
-      // Re-search to show the new contact in suggestions
-      doSearch(inviteEmail)
-    } catch {
-      toast.error('Failed to save contact')
-    } finally {
-      setSavingContact(false)
     }
   }
 
@@ -290,68 +262,38 @@ export default function GroupDetailPage({
                         className="rounded-xl"
                         autoComplete="off"
                       />
-                      {showSuggestions && inviteEmail.length >= 2 && (
-                        <div className="absolute z-50 top-full mt-1 w-full glass-strong rounded-xl overflow-hidden shadow-lg border border-border/30 max-h-64 overflow-y-auto">
-                          {searching ? (
-                            <div className="flex justify-center py-4">
-                              <div className="animate-spin rounded-full h-5 w-5 spinner-gradient" />
-                            </div>
-                          ) : suggestions.length > 0 ? (
-                            suggestions.map((person) => (
-                              <button
-                                key={person.id}
-                                type="button"
-                                onMouseDown={() => selectPerson(person)}
-                                className="w-full text-left px-4 py-2.5 hover:bg-foreground/5 transition-colors flex items-center gap-3 cursor-pointer"
-                              >
-                                <div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold shrink-0">
-                                  {(person.name || person.email || person.walletAddress || '?')[0].toUpperCase()}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium truncate">{person.name || person.email || person.walletAddress}</p>
-                                  {person.name && person.email && (
-                                    <p className="text-xs text-muted-foreground truncate">{person.email}</p>
-                                  )}
-                                </div>
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                                  person.source === 'contact'
-                                    ? 'bg-emerald-500/10 text-emerald-500'
-                                    : 'bg-blue-500/10 text-blue-500'
-                                }`}>
-                                  {person.source === 'contact' ? 'Contact' : 'Group member'}
-                                </span>
-                              </button>
-                            ))
-                          ) : searchedOnce ? (
-                            <div className="px-4 py-3 space-y-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-full bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-500 shrink-0">
-                                  {inviteEmail[0]?.toUpperCase() || '?'}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">New user</p>
-                                  <p className="text-xs text-muted-foreground truncate">{inviteEmail}</p>
-                                </div>
+                      {showSuggestions && searching && (
+                        <div className="absolute z-50 top-full mt-1 w-full bg-background rounded-xl overflow-hidden shadow-lg border border-border py-4 flex justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 spinner-gradient" />
+                        </div>
+                      )}
+                      {showSuggestions && !searching && suggestions.length > 0 && (
+                        <div className="absolute z-50 top-full mt-1 w-full bg-background rounded-xl overflow-hidden shadow-lg border border-border max-h-64 overflow-y-auto">
+                          {suggestions.map((person) => (
+                            <button
+                              key={person.id}
+                              type="button"
+                              onMouseDown={() => selectPerson(person)}
+                              className="w-full text-left px-4 py-2.5 hover:bg-secondary transition-colors flex items-center gap-3 cursor-pointer"
+                            >
+                              <div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold shrink-0">
+                                {(person.name || person.email || person.walletAddress || '?')[0].toUpperCase()}
                               </div>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onMouseDown={addToContactsInline}
-                                  disabled={savingContact}
-                                  className="flex-1 text-center text-sm font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer disabled:opacity-50"
-                                >
-                                  {savingContact ? 'Saving...' : 'Save to Contacts'}
-                                </button>
-                                <button
-                                  type="button"
-                                  onMouseDown={() => setShowSuggestions(false)}
-                                  className="flex-1 text-center text-sm font-medium px-3 py-1.5 rounded-lg bg-foreground/5 text-muted-foreground hover:bg-foreground/10 transition-colors cursor-pointer"
-                                >
-                                  Skip
-                                </button>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">{person.name || person.email || person.walletAddress}</p>
+                                {person.name && person.email && (
+                                  <p className="text-xs text-muted-foreground truncate">{person.email}</p>
+                                )}
                               </div>
-                            </div>
-                          ) : null}
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                                person.source === 'contact'
+                                  ? 'bg-emerald-500/10 text-emerald-500'
+                                  : 'bg-blue-500/10 text-blue-500'
+                              }`}>
+                                {person.source === 'contact' ? 'Contact' : 'Group member'}
+                              </span>
+                            </button>
+                          ))}
                         </div>
                       )}
                     </div>
