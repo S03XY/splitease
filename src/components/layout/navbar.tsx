@@ -28,8 +28,8 @@ export function Navbar() {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 pt-3 sm:pt-4 animate-navbar-slide-down">
-      <nav className="max-w-5xl mx-auto glass-strong rounded-2xl float-shadow-lg gradient-border">
+    <div className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 pt-3 sm:pt-4 pointer-events-none animate-navbar-slide-down">
+      <nav className="max-w-5xl mx-auto glass-strong rounded-2xl float-shadow-lg gradient-border pointer-events-auto">
         <div className="px-4 sm:px-5 py-3">
           <div className="flex justify-between items-center">
             {/* Logo + Nav links */}
@@ -167,7 +167,7 @@ export function Navbar() {
       {/* Mobile menu — outside nav to avoid border-radius clipping */}
       <div
         className={`sm:hidden transition-all duration-300 ease-out mt-2 ${
-          mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+          mobileOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2'
         }`}
       >
         <div className="max-w-5xl mx-auto glass rounded-2xl float-shadow p-2 space-y-0.5" style={{ backgroundColor: 'var(--background)' }}>
