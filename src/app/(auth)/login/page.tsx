@@ -25,10 +25,15 @@ export default function LoginPage() {
     groupsCount: number
     usersCount: number
   } | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
 
   // Animated counter for total settled amount
   const targetAmount = stats ? parseFloat(stats.totalSettled) || 0 : 0
-  const animatedAmount = useAnimatedCounter(targetAmount, 2000)
+  const animatedAmount = useAnimatedCounter(isMounted ? targetAmount : 0, 2000)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     if (ready && authenticated) {
