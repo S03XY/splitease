@@ -14,8 +14,8 @@ export function useAnimatedCounter(
   easing: (t: number) => number = easeOutCubic
 ) {
   const [count, setCount] = useState(0)
-  const frameRef = useRef<number>()
-  const startTimeRef = useRef<number>()
+  const frameRef = useRef<number | undefined>(undefined)
+  const startTimeRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     // Reset when target changes
