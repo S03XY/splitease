@@ -7,6 +7,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { truncateAddress } from '@/lib/utils'
+import { useTokenBalance } from '@/hooks/useTokenBalance'
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -21,6 +22,7 @@ export function Navbar() {
   const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { balance, loading: balanceLoading } = useTokenBalance()
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard'
@@ -105,28 +107,28 @@ export function Navbar() {
                 </svg>
               </button>
 
+              {/* AlphaUSD Balance */}
+              {balance && (
+                <>
+                  <div className="hidden sm:block w-px h-5 bg-border" />
+                  <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/5">
+                    <span className="text-xs font-bold text-primary tabular-nums">
+                      {parseFloat(balance).toFixed(2)}
+                    </span>
+                    <span className="text-[9px] text-primary/50 font-medium">AlphaUSD</span>
+                  </div>
+                </>
+              )}
+
               <div className="hidden sm:block w-px h-5 bg-border" />
 
               <Link
                 href="/dashboard/profile"
-                className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 px-2.5 py-1.5 rounded-xl hover:bg-accent/60 group"
+                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background text-[10px] font-bold transition-all duration-200 hover:scale-110 active:scale-95"
+                title={user?.email?.address || truncateAddress(user?.wallet?.address || '')}
               >
-                <div className="w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:scale-110">
-                  {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
-                </div>
-                <span className="max-w-30 truncate">
-                  {user?.email?.address || truncateAddress(user?.wallet?.address || '')}
-                </span>
+                {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
               </Link>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logout}
-                className="hidden sm:inline-flex rounded-xl border-border/50 hover:border-border text-xs h-8 transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                Sign Out
-              </Button>
 
               {/* Mobile hamburger */}
               <button
@@ -187,6 +189,21 @@ export function Navbar() {
           ))}
 
           <div className="mx-2 border-t border-border/50" />
+
+          {/* Mobile AlphaUSD Balance */}
+          {balance && (
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs font-medium text-primary/80">AlphaUSD Balance</span>
+              </div>
+              <span className="text-sm font-bold text-primary tabular-nums">
+                {parseFloat(balance).toFixed(2)}
+              </span>
+            </div>
+          )}
 
           <Link
             href="/dashboard/profile"
