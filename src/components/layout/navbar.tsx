@@ -141,7 +141,7 @@ export function Navbar() {
                       onClick={() => setProfileOpen(false)}
                     />
                     {/* Dropdown */}
-                    <div className="absolute right-0 mt-2 w-56 rounded-xl glass float-shadow border border-border/50 overflow-hidden z-50 animate-fade-in-up">
+                    <div className="absolute right-0 mt-2 w-56 rounded-xl float-shadow border border-border overflow-hidden z-50 animate-fade-in-up" style={{ backgroundColor: 'var(--background)' }}>
                       <div className="p-3 border-b border-border/30">
                         <p className="text-xs text-muted-foreground">Signed in as</p>
                         <p className="text-sm font-medium truncate mt-0.5">
