@@ -22,6 +22,7 @@ export function Navbar() {
   const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const { balance, loading: balanceLoading } = useTokenBalance()
 
   const isActive = (href: string) => {
@@ -122,13 +123,56 @@ export function Navbar() {
 
               <div className="hidden sm:block w-px h-5 bg-border" />
 
-              <Link
-                href="/dashboard/profile"
-                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background text-[10px] font-bold transition-all duration-200 hover:scale-110 active:scale-95"
-                title={user?.email?.address || truncateAddress(user?.wallet?.address || '')}
-              >
-                {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
-              </Link>
+              {/* Profile Dropdown */}
+              <div className="hidden sm:block relative">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background text-[10px] font-bold transition-all duration-200 hover:scale-110 active:scale-95"
+                  title={user?.email?.address || truncateAddress(user?.wallet?.address || '')}
+                >
+                  {(user?.email?.address?.[0] || user?.wallet?.address?.[2] || '?').toUpperCase()}
+                </button>
+
+                {profileOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setProfileOpen(false)}
+                    />
+                    {/* Dropdown */}
+                    <div className="absolute right-0 mt-2 w-56 rounded-xl glass float-shadow border border-border/50 overflow-hidden z-50 animate-fade-in-up">
+                      <div className="p-3 border-b border-border/30">
+                        <p className="text-xs text-muted-foreground">Signed in as</p>
+                        <p className="text-sm font-medium truncate mt-0.5">
+                          {user?.email?.address || truncateAddress(user?.wallet?.address || '')}
+                        </p>
+                      </div>
+                      <div className="p-1">
+                        <Link
+                          href="/dashboard/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Profile
+                        </Link>
+                        <button
+                          onClick={() => { logout(); setProfileOpen(false) }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* Mobile hamburger */}
               <button
