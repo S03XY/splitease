@@ -38,7 +38,7 @@ interface PersonSuggestion {
   name: string | null
   email: string | null
   walletAddress: string | null
-  source: 'contact' | 'group_member'
+  isContact: boolean
 }
 
 interface RequestSummary {
@@ -721,9 +721,11 @@ export default function RequestsPage() {
                             <p className="text-xs text-muted-foreground truncate">{person.email}</p>
                           )}
                         </div>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 bg-secondary text-secondary-foreground">
-                          {person.source === 'contact' ? 'Contact' : 'Group'}
-                        </span>
+                        {person.isContact && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 bg-primary/10 text-primary border border-primary/20">
+                            Contact
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>

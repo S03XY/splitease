@@ -8,7 +8,7 @@ export interface PersonResult {
   name: string | null
   email: string | null
   walletAddress: string | null
-  source: 'contact' | 'group_member'
+  isContact: boolean
 }
 
 export async function GET(req: NextRequest) {
@@ -21,83 +21,40 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const results: PersonResult[] = []
-    const contactEmails = new Set<string>()
-    const contactWallets = new Set<string>()
-    const contactUserIds = new Set<string>()
+    // Get all contact userIds for this user
+    const contacts = await prisma.contact.findMany({
+      where: { ownerId: user.id },
+      select: { userId: true },
+    })
+    const contactUserIds = new Set(contacts.map((c) => c.userId).filter((id): id is string => !!id))
 
-    // 1. Search contacts
-    try {
-      const contacts = await prisma.contact.findMany({
-        where: {
-          ownerId: user.id,
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { walletAddress: { contains: q, mode: 'insensitive' } },
-          ],
-        },
-        include: {
-          user: { select: { id: true, name: true, email: true, walletAddress: true } },
-        },
-        take: 10,
-      })
-
-      for (const c of contacts) {
-        if (c.email) contactEmails.add(c.email.toLowerCase())
-        if (c.walletAddress) contactWallets.add(c.walletAddress.toLowerCase())
-        if (c.userId) contactUserIds.add(c.userId)
-        results.push({
-          id: c.id,
-          userId: c.userId,
-          name: c.user?.name || c.name,
-          email: c.user?.email || c.email,
-          walletAddress: c.user?.walletAddress || c.walletAddress,
-          source: 'contact' as const,
-        })
-      }
-    } catch (e) {
-      console.error('Contact search failed:', e instanceof Error ? e.message : e)
-    }
-
-    // 2. Search past group members (people in groups the current user is in)
-    const groupMembers = await prisma.groupMember.findMany({
+    // Search ALL users (except current user)
+    const users = await prisma.user.findMany({
       where: {
-        group: {
-          members: { some: { userId: user.id } },
-        },
-        userId: { not: user.id },
-        user: {
-          OR: [
-            { name: { contains: q, mode: 'insensitive' } },
-            { email: { contains: q, mode: 'insensitive' } },
-            { walletAddress: { contains: q, mode: 'insensitive' } },
-          ],
-        },
+        id: { not: user.id },
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+          { walletAddress: { contains: q, mode: 'insensitive' } },
+        ],
       },
-      include: {
-        user: { select: { id: true, name: true, email: true, walletAddress: true } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        walletAddress: true,
       },
+      take: 20,
     })
 
-    // Deduplicate: skip group members already in contacts, and only show each user once
-    const seenUserIds = new Set<string>()
-    for (const gm of groupMembers) {
-      if (contactUserIds.has(gm.userId)) continue
-      if (gm.user.email && contactEmails.has(gm.user.email.toLowerCase())) continue
-      if (gm.user.walletAddress && contactWallets.has(gm.user.walletAddress.toLowerCase())) continue
-      if (seenUserIds.has(gm.userId)) continue
-      seenUserIds.add(gm.userId)
-
-      results.push({
-        id: `gm-${gm.userId}`,
-        userId: gm.userId,
-        name: gm.user.name,
-        email: gm.user.email,
-        walletAddress: gm.user.walletAddress,
-        source: 'group_member',
-      })
-    }
+    const results: PersonResult[] = users.map((u) => ({
+      id: u.id,
+      userId: u.id,
+      name: u.name,
+      email: u.email,
+      walletAddress: u.walletAddress,
+      isContact: contactUserIds.has(u.id),
+    }))
 
     return NextResponse.json({ results })
   } catch (error) {

@@ -73,7 +73,7 @@ export default function GroupDetailPage({
   const [inviting, setInviting] = useState(false)
   const [suggestions, setSuggestions] = useState<Array<{
     id: string; name: string | null; email: string | null; walletAddress: string | null
-    source: 'contact' | 'group_member'
+    isContact: boolean
   }>>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searching, setSearching] = useState(false)
@@ -379,9 +379,11 @@ export default function GroupDetailPage({
                                   <p className="text-xs text-muted-foreground truncate">{person.email}</p>
                                 )}
                               </div>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 bg-secondary text-secondary-foreground">
-                                {person.source === 'contact' ? 'Contact' : 'Group member'}
-                              </span>
+                              {person.isContact && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 bg-primary/10 text-primary border border-primary/20">
+                                  Contact
+                                </span>
+                              )}
                             </button>
                           ))}
                         </div>
