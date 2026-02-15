@@ -4,6 +4,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { useAnimatedCounter } from '@/hooks/useAnimatedCounter'
 
 function formatAmount(value: string): string {
   const num = parseFloat(value)
@@ -24,6 +25,10 @@ export default function LoginPage() {
     groupsCount: number
     usersCount: number
   } | null>(null)
+
+  // Animated counter for total settled amount
+  const targetAmount = stats ? parseFloat(stats.totalSettled) || 0 : 0
+  const animatedAmount = useAnimatedCounter(targetAmount, 2000)
 
   useEffect(() => {
     if (ready && authenticated) {
@@ -96,7 +101,7 @@ export default function LoginPage() {
             <div className="glass rounded-2xl float-shadow px-6 py-5 space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total settled on-chain</p>
               <p className="text-4xl font-bold tracking-tight gradient-text">
-                {stats ? formatAmount(stats.totalSettled) : '$0.00'}
+                {stats ? formatAmount(animatedAmount.toString()) : '$0.00'}
               </p>
               <div className="flex items-center gap-4 pt-1 text-[11px] text-muted-foreground">
                 {[
